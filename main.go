@@ -30,6 +30,8 @@ func main() {
 		expenseTracker.ViewExpenses()
 	case "summarize":
 		expenseTracker.SummarizeExpenses()
+	case "search":
+		expenseTracker.SearchExpenses(*name)
 	default:
 		fmt.Println("Invalid action. Use 'add', 'view', or 'summarize'.")
 		os.Exit(1)
@@ -121,4 +123,22 @@ func (et *ExpenseTracker) SummarizeExpenses() {
 	}
 
 	fmt.Printf("Total Expenses: $%.2f\n", totalExpense)
+}
+
+func (et *ExpenseTracker) SearchExpenses(name string) {
+	if name == "" {
+		fmt.Println("Invalid search key. Please provide")
+		return
+	}
+	found := false
+	for _, expense := range et.Expenses {
+		if expense.Name == name {
+			fmt.Printf("Expense found: %s ($%.2f)\n", expense.Name, expense.Cost)
+			found = true
+			break
+		}
+	}
+	if !found {
+		fmt.Printf("Expense with name '%s' not found.\n", name)
+	}
 }
