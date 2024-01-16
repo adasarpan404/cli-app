@@ -22,6 +22,8 @@ func main() {
 	action := flag.String("action", "view", "Specify the action: Add, View or summarize")
 	name := flag.String("name", "", "Specify the name of your expense")
 	cost := flag.Float64("cost", 0, "Specify the cost of the expense")
+	minCost := flag.Float64("minCost", 0, "Specify the min cost for searching")
+	maxCost := flag.Float64("maxCost", 0, "Specify the max cost for searching")
 	flag.Parse()
 	switch *action {
 	case "add":
@@ -31,7 +33,7 @@ func main() {
 	case "summarize":
 		expenseTracker.SummarizeExpenses()
 	case "search":
-		expenseTracker.SearchExpenses(*name)
+		expenseTracker.SearchExpenses(*name, *minCost, *maxCost)
 	default:
 		fmt.Println("Invalid action. Use 'add', 'view', or 'summarize'.")
 		os.Exit(1)
@@ -125,20 +127,25 @@ func (et *ExpenseTracker) SummarizeExpenses() {
 	fmt.Printf("Total Expenses: $%.2f\n", totalExpense)
 }
 
-func (et *ExpenseTracker) SearchExpenses(name string) {
-	if name == "" {
+func (et *ExpenseTracker) SearchExpenses(name string, minCost, maxCost float64) {
+	if name == "" && minCost <= 0 && maxCost <= 0 {
 		fmt.Println("Invalid search key. Please provide")
 		return
 	}
 	found := false
 	for _, expense := range et.Expenses {
-		if expense.Name == name {
+		nameMatch := name == "" || expense.Name == name
+
+		// Check if the cost is within the specified range (if provided)
+		costInRange := (minCost <= 0 || expense.Cost >= minCost) &&
+			(maxCost <= 0 || expense.Cost <= maxCost)
+
+		if nameMatch && costInRange {
 			fmt.Printf("Expense found: %s ($%.2f)\n", expense.Name, expense.Cost)
 			found = true
-			break
 		}
 	}
 	if !found {
-		fmt.Printf("Expense with name '%s' not found.\n", name)
+		fmt.Println("No expenses found matching the specified criteria.")
 	}
 }
