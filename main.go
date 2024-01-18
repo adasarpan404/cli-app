@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"sort"
 )
 
 type Expense struct {
@@ -24,16 +25,21 @@ func main() {
 	cost := flag.Float64("cost", 0, "Specify the cost of the expense")
 	minCost := flag.Float64("minCost", 0, "Specify the min cost for searching")
 	maxCost := flag.Float64("maxCost", 0, "Specify the max cost for searching")
+	sortOrder := flag.String("sortOrder", "asc", "Specify the sort order: asc or desc")
 	flag.Parse()
 	switch *action {
 	case "add":
 		expenseTracker.AddExpense(*name, *cost)
 	case "view":
+		expenseTracker.SortByCost(*sortOrder)
 		expenseTracker.ViewExpenses()
 	case "summarize":
+		expenseTracker.SortByCost(*sortOrder)
 		expenseTracker.SummarizeExpenses()
 	case "search":
 		expenseTracker.SearchExpenses(*name, *minCost, *maxCost)
+	case "sort":
+		expenseTracker.SortByCost(*sortOrder)
 	default:
 		fmt.Println("Invalid action. Use 'add', 'view', or 'summarize'.")
 		os.Exit(1)
@@ -148,4 +154,16 @@ func (et *ExpenseTracker) SearchExpenses(name string, minCost, maxCost float64) 
 	if !found {
 		fmt.Println("No expenses found matching the specified criteria.")
 	}
+}
+
+func (et *ExpenseTracker) SortByCost(sortOrder string) {
+	sort.Slice(et.Expenses, func(i, j int) bool {
+		if sortOrder == "asc" {
+			return et.Expenses[i].Cost < et.Expenses[j].Cost
+		} else if sortOrder == "desc" {
+			return et.Expenses[i].Cost > et.Expenses[j].Cost
+		}
+		// Default to ascending order if sortOrder is not "asc" or "desc"
+		return et.Expenses[i].Cost < et.Expenses[j].Cost
+	})
 }
